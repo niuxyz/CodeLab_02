@@ -4,58 +4,57 @@ using UnityEngine;
 
 public class PlayerControlScript : MonoBehaviour {
 
-	public float speed = 1;
-	public string horizontalInput;
-	public string verticalInput;
+	public float Maxspeed;
+	public string cntrlx;
+	public string jump;
+	public float jumpSpeed;
+	public LayerMask layer;
+	private Ray2D ray;
+	private RaycastHit2D rayhit;
+	public bool ifJump;
 
-	private bool changeColor = false;
-
-	private SpriteRenderer sprite;
-	private Rigidbody2D rigid;
+	//The Direction and Speed Information
+	private Vector2 velocity;
 
 	// Use this for initialization
 	void Start () {
-		sprite = GetComponent<SpriteRenderer> ();
-		rigid = GetComponent<Rigidbody2D> ();
+		ray = new Ray2D(transform.position, Vector2.down);
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void FixedUpdate () {
+
+		//Jumping Code ----Start
+		ray = new Ray2D(transform.position, Vector2.down);
+		rayhit = Physics2D.Raycast(ray.origin, ray.direction, 0.25f, layer);
+
+		if(rayhit.collider != null)
+		{
+			ifJump = true;
+		}
+		else
+		{
+			ifJump = false;
+		}
+
+		if(Input.GetButton(jump) && ifJump)
+		{
+			GetComponent<Rigidbody2D>().velocity += Vector2.up * jumpSpeed;
+		}
+		//Jumping Code ----End
+
+		//Change Color ----Start
+		Color playerColor = new Color(1,1,1,GetComponent<Rigidbody2D>().velocity.magnitude/Maxspeed);
+		GetComponent<SpriteRenderer>().color =  playerColor;
+		//Change Color -----End
+
+		Debug.DrawLine(ray.origin, ray.origin + ray.direction * 0.25f);
 		Move();
-
-		if(changeColor == true)
-			ChangeColor ();
-
-//		if(Input.GetKey(KeyCode.W)){
-////			Debug.Log("This is working");
-//			transform.Translate(Vector3.up * speed * Time.deltaTime);
-//		}
-//
-//		if(Input.GetKey(KeyCode.S)){
-//			transform.Translate(Vector3.down * speed * Time.deltaTime);
-//		}
 	}
 
 	void Move(){
-		//if(Input.GetKey(key)){
-			//transform.Translate(dir * speed * Time.deltaTime);
-			//rigid.velocity = (Vector2)dir * speed;
-		//}
-
-		float x = Input.GetAxis (horizontalInput);
-		float y = Input.GetAxis (verticalInput);
-
-		if (!changeColor && (x > 0 || y > 0))
-			changeColor = true;
-
-		rigid.velocity = new Vector2 (x, y) * speed;
-
-		rigid.velocity *= 0.9f;
-	}
-
-	//Change the Color
-	void ChangeColor()
-	{
-		sprite.color = new Color(sprite.color.r,sprite.color.g, sprite.color.b, rigid.velocity.magnitude*2);
+		Vector2 targetVelocity = new Vector2(Input.GetAxis(cntrlx), velocity.y)*Maxspeed;
+		velocity = Vector2.Lerp(velocity, targetVelocity, 0.1f);
+		GetComponent<Rigidbody2D>().velocity = new Vector3(velocity.x, GetComponent<Rigidbody2D>().velocity.y, 0) ;
 	}
 }
