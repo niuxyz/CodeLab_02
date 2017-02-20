@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerControlScript : MonoBehaviour {
 
-	public float Maxspeed;
+	public float MaxForce;
 	public string cntrlx;
 	public string jump;
 	public float jumpSpeed;
@@ -15,6 +15,7 @@ public class PlayerControlScript : MonoBehaviour {
 
 	//The Direction and Speed Information
 	private Vector2 velocity;
+	private Vector2 force;
 
 	// Use this for initialization
 	void Start () {
@@ -23,11 +24,10 @@ public class PlayerControlScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void FixedUpdate () {
-
 		//Jumping Code ----Start
 		ray = new Ray2D(transform.position, Vector2.down);
-		rayhit = Physics2D.Raycast(ray.origin, ray.direction, 0.25f, layer);
-
+		rayhit = Physics2D.Raycast(ray.origin, ray.direction, 0.7f, layer);
+		Debug.Log (rayhit.collider);
 		if(rayhit.collider != null)
 		{
 			ifJump = true;
@@ -37,7 +37,7 @@ public class PlayerControlScript : MonoBehaviour {
 			ifJump = false;
 		}
 
-		if(Input.GetButton(jump) && ifJump)
+		if(Input.GetButtonDown(jump) && ifJump)
 		{
 			GetComponent<Rigidbody2D>().velocity += Vector2.up * jumpSpeed;
 		}
@@ -48,13 +48,16 @@ public class PlayerControlScript : MonoBehaviour {
 		//GetComponent<SpriteRenderer>().color =  playerColor;
 		//Change Color -----End
 
-		Debug.DrawLine(ray.origin, ray.origin + ray.direction * 0.25f);
+		Debug.DrawLine(ray.origin, ray.origin + ray.direction * 0.5f);
 		Move();
 	}
 
 	void Move(){
-		Vector2 targetVelocity = new Vector2(Input.GetAxis(cntrlx), velocity.y)*Maxspeed;
-		velocity = Vector2.Lerp(velocity, targetVelocity, 0.1f);
-		GetComponent<Rigidbody2D>().velocity = new Vector3(velocity.x, GetComponent<Rigidbody2D>().velocity.y, 0) ;
+		//Vector2 targetVelocity = new Vector2(Input.GetAxis(cntrlx), velocity.y)*Maxspeed;
+		//velocity = Vector2.Lerp(velocity, targetVelocity, 0.1f);
+		//GetComponent<Rigidbody2D>().velocity = new Vector3(velocity.x, GetComponent<Rigidbody2D>().velocity.y, 0) ;
+
+		force = new Vector2(Input.GetAxis(cntrlx), velocity.y)*MaxForce;
+		GetComponent<Rigidbody2D>().AddForce(force,ForceMode2D.Impulse);
 	}
 }
